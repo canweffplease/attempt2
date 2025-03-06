@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>attempt 2</title>
+</head>
+<body>
+	<button onclick="getGreeting()">get greeting from backend</button>
+	<p id="greeting"></p>
+
+	<script>
+		async function getGreeting() {
+			try {
+				const response = await fetch('api/greet');
+				const data = await response.json();
+				document.getElementById('greeting').textContent = data.message;
+			}
+			catch (error) {
+				console.error('error fetching greeting:', error);
+			}
+		}
+	</script>
+</body>
+</html>
