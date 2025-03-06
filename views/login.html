@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<body>
+	<h1>login page</h1>
+	<form action="/login" method="POST">
+		<input type="text" name="user" placeholder="user" required>
+		<input type="password" name="pass" placeholder="pass" required>
+		<button type="submit">login</button>
+	</form>
+	<button onclick="goHome()">go home</button>
+	<button onclick="goSignUp()">go sign up</button>
+	<script>
+	function goHome() {
+		window.location.href = '/';
+	}
+	function goSignUp() {
+		window.location.href = '/signup';
+	}
+	
+	</script>
+</body>
+</head>

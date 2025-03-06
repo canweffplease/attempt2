@@ -5,6 +5,7 @@
 </head>
 <body>
 	<button onclick="getGreeting()">get greeting from backend</button>
+	<button onclick="goToLogin()">log in</button>
 	<p id="greeting"></p>
 
 	<script>
@@ -17,6 +18,10 @@
 			catch (error) {
 				console.error('error fetching greeting:', error);
 			}
+		}
+
+		function goToLogin() {
+			window.location.href = '/login';
 		}
 	</script>
 </body>

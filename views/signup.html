@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head></head>
+<body>
+	<p>sign up</p>
+	<form action="/signup" method="POST">
+		<input type="text" name="user" placeholder="user" required>
+		<input type="text" name="pass" placeholder="pass" required>
+		<button type="submit">signup</button>
+	</form>
+	<button onclick="goHome()">go home</button>
+	<button onclick="goLogIn()">go log in</button>
+	<script>
+		function goHome() {
+			window.location.href = '/';
+		}
+		function goLogIn() {
+			window.location.href = '/login';
+		}
+	</script>
+</body>
+<html>
