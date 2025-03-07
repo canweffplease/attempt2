@@ -4,21 +4,76 @@
 <head>
 <body>
 	<h1>login page</h1>
-	<form action="/login" method="POST">
-		<input type="text" name="email" placeholder="email" required/>
-		<input type="text" name="user" placeholder="user" required/>
-		<input type="password" name="pass" placeholder="pass" required/>
+	<form id="loginForm">
+		<input type="text" id="email" name="email" placeholder="email" required/>
+		<input type="text" id="user" name="user" placeholder="user" required/>
+		<input type="password" id="pass" name="pass" placeholder="pass" required/>
 		<button type="submit">login</button>
 	</form>
 	<button onclick="goHome()">go home</button>
 	<button onclick="goSignUp()">go sign up</button>
+	<button onclick="goProtected()">go protected</button>
 	<script>
-	function goHome() {
-		window.location.href = '/';
-	}
-	function goSignUp() {
-		window.location.href = '/signup';
-	}
+		document.getElementById("loginForm").addEventListener('submit', async function (e) {
+			e.preventDefault(); //prevent default submit
+			const email = document.getElementById("email").value;
+			const user = document.getElementById("user").value;
+			const pass = document.getElementById("pass").value;
+
+			try {
+				const response = await fetch('/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({email, user, pass}),
+				});
+
+				const data = await response.json();
+				if (data.token) {
+					localStorage.setItem('jwtToken', data.token);
+					console.log('login success!');
+
+					//window.location.href = '/protected';
+				}
+				else {
+					alert('invalid credentials!');
+				}
+			}
+			catch (error) {
+				console.error('error during login: ', error);
+			}
+		});
+		function goHome() {
+			window.location.href = '/';
+		}
+		function goSignUp() {
+			window.location.href = '/signup';
+		}
+		function goProtected() {
+			const token = localStorage.getItem('jwtToken');
+
+			fetch('/protected', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+				}
+			})
+			.then(response => {
+				if (response.ok) {
+					return response.json();
+				}
+				else 
+				{
+					throw new Error('unauth or invalid token');
+				}
+			})
+			.then(data => {
+				console.log(data);
+				window.location.href = '/protected';
+			})
+
+		}
 	
 	</script>
 </body>

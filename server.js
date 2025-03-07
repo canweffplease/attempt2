@@ -1,9 +1,9 @@
 const express = require('express');
 const app = express();
+require('dotenv').config(); //loads variables from env file
 const port = process.env.PORT || 3000;
 const path = require('path');
 
-require('dotenv').config(); //loads variables from env file
 
 const jwt = require('jsonwebtoken');
 const secretKey = process.env.SECRET_KEY;
@@ -20,6 +20,22 @@ const client = new Client({
 client.connect()
 	.then(() => console.log('connected to db'))
 	.catch(error => console.error('error connecting to postgres', error.stack));
+
+const authenticateToken = (req, res, next) => {
+	const token = req.header('Authorization')?.split(' ')[1]; // bearer token
+	console.log(token);
+	if (!token) {
+		return res.status(403).json({ error: 'Access Denied' });
+	}
+
+	jwt.verify(token, process.env.SECRET_KEY, (error, decoded) => {
+		if (error) {
+			return res.status(403).json({ error: 'invalid token'});
+		}
+		req.user = decoded;
+		next();
+	});
+};
 
 app.use(express.static('public')); // middleware to serve static files
 app.use(express.urlencoded({ extended: true }));
@@ -87,10 +103,16 @@ app.post('/login', async (req, res) => {
 		console.error("error fetching users", error.stack);
 	}
 	if (connected) {
-		res.send(`login: ${user}, ${pass}`);
+		const token = jwt.sign({ username: user }, process.env.SECRET_KEY, { expiresIn: '1h'});
+		return res.json({ token });
 	}
-	res.sendFile(path.join(__dirname, 'views', 'login.html'));
+	return res.status(401).json({ error: 'invalid credentials' });
 
+});
+
+app.get('/protected', authenticateToken, (req, res) => {
+	console.log(req);
+	res.json({ message: 'success' });
 });
 
 app.listen(port, () => {
