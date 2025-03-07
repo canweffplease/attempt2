@@ -3,8 +3,18 @@ const app = express();
 const port = process.env.PORT || 3000;
 const path = require('path');
 
-//for testing
-var accounts = new Map();
+const { Client } = require('pg');
+
+const client = new Client({
+	user: 'postgres',
+	password: '5555',
+	host: 'localhost',
+	port: 5432,
+	database: 'postgres',
+});
+client.connect()
+	.then(() => console.log('connected to db'))
+	.catch(error => console.error('error connecting to postgres', error.stack));
 
 app.use(express.static('public')); // middleware to serve static files
 app.use(express.urlencoded({ extended: true }));
@@ -23,32 +33,58 @@ app.get('/signup', (req, res) =>{
 	res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
 
-app.post('/signup', (req, res) => {
-	const { user, pass } = req.body;
-	for (var [k, v] of accounts) {
-		if (k === user && v === pass) {
-			res.send('Error');
+app.post('/signup', async (req, res) => {
+	const { email, user, pass } = req.body;
+	var accountExists = false;
+	try{
+		const res = await client.query(`
+			SELECT * FROM accounts
+			WHERE email = $1 OR username = $2 OR passcode = $3
+		`, [email, user, pass]);
+		if (res.rows[0]) {
+			accountExists = true;
+		}
+		else {
+			const res = await client.query(`
+				INSERT INTO accounts (email, username, passcode)
+				VALUES ($1, $2, $3)
+			`, [email, user, pass]);
 		}
 	}
-	accounts.set(user, pass);
-	res.send('signed up');
+	catch (error) {
+		console.error('error signing up', error.stack);
+	}
+	if (accountExists) {
+		res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+	}
+	else {
+		res.sendFile(path.join(__dirname, 'views', 'login.html'));
+	}
 });
 
 app.get('/login', (req, res) => {
 	res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
-app.post('/login', (req, res) => {
-	const { user, pass } = req.body;
-
-	//check db for authentication
-	for (var [k, v] of accounts) {
-		if (k === user && v === pass) {
-			res.send('logged in!');
-			return;
+app.post('/login', async (req, res) => {
+	const { email, user, pass } = req.body;
+	var connected = false;
+	try {
+		const res = await client.query(`
+			SELECT * FROM accounts
+			WHERE email = $1 AND username = $2 AND passcode = $3
+		`, [email, user, pass]);
+		if (res.rows[0]) {
+			connected = true;
 		}
 	}
-	res.send('error');
+	catch (error) {
+		console.error("error fetching users", error.stack);
+	}
+	if (connected) {
+		res.send(`login: ${user}, ${pass}`);
+	}
+	res.sendFile(path.join(__dirname, 'views', 'login.html'));
 
 });
 
