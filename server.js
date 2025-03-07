@@ -3,11 +3,16 @@ const app = express();
 const port = process.env.PORT || 3000;
 const path = require('path');
 
+require('dotenv').config(); //loads variables from env file
+
+const jwt = require('jsonwebtoken');
+const secretKey = process.env.SECRET_KEY;
+
 const { Client } = require('pg');
 
 const client = new Client({
 	user: 'postgres',
-	password: '5555',
+	password: process.env.DBPASSWORD,
 	host: 'localhost',
 	port: 5432,
 	database: 'postgres',
