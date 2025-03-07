@@ -1,0 +1,4 @@
+# PSQL Stuff
+ - to switch to postgres user use the command 
+ 	sudo -i -u postres
+ - to enter into postgres shell type psql
